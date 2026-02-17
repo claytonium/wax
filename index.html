@@ -81,8 +81,8 @@ select.sort-select{background:var(--surface);border:1px solid var(--border);bord
 .badge-unknown{background:rgba(110,101,88,0.15);color:var(--text-dim);border:1px solid var(--border);}
 
 /* ── Inline detail row ── */
-.detail-row{grid-column:1/-1;background:var(--surface2);border-top:1px solid var(--border2);border-bottom:1px solid var(--border2);overflow:hidden;max-height:0;transition:max-height 0.38s cubic-bezier(0.4,0,0.2,1),opacity 0.25s ease;opacity:0;}
-.detail-row.open{max-height:1000px;opacity:1;}
+.detail-row{grid-column:1/-1;background:var(--surface2);border-top:1px solid var(--border2);border-bottom:1px solid var(--border2);overflow:hidden;height:0;opacity:0;transition:height 0.36s cubic-bezier(0.4,0,0.2,1),opacity 0.28s ease;}
+.detail-row.open{opacity:1;}
 .detail-inner{display:grid;grid-template-columns:220px 1fr 300px;gap:0;padding:28px 32px;}
 
 /* Art col */
@@ -202,8 +202,12 @@ select.sort-select{background:var(--surface);border:1px solid var(--border);bord
   header{padding:14px 20px;flex-wrap:wrap;}
   .search-wrap,.filter-row{padding-left:20px;padding-right:20px;}
   .grid-wrap{margin:16px 20px;}
-  .detail-inner{grid-template-columns:1fr;}
-  .detail-art-col{padding-right:0;}
+  .detail-inner{grid-template-columns:1fr;padding:20px 16px;}
+  .detail-art-col{padding-right:0;display:flex;flex-direction:column;align-items:center;}
+  .detail-art,.detail-art-placeholder{max-width:240px;width:100%;}
+  .detail-info-col{border-right:none;padding-right:0;}
+  .detail-edit-col{padding-left:0;padding-top:20px;border-top:1px solid var(--border);}
+  .detail-meta-grid{grid-template-columns:1fr;}
   .form-row{grid-template-columns:1fr;}
 }
 </style>
@@ -468,10 +472,7 @@ function renderGrid() {
   grid.innerHTML = html;
 
   if (expandedId) {
-    requestAnimationFrame(()=>{
-      const row = document.getElementById('detail-row-'+expandedId);
-      if (row) requestAnimationFrame(()=>row.classList.add('open'));
-    });
+    requestAnimationFrame(()=>openDetailRow(expandedId));
   }
 }
 
@@ -653,6 +654,24 @@ function renderDetailPanel(record, rel, inner) {
     </div>`;
 }
 
+// ── Detail row animation ───────────────────────────────────────────────────
+function openDetailRow(id) {
+  const row = document.getElementById('detail-row-' + id);
+  if (!row) return;
+  // Measure natural height, animate to it, then release to 'auto'
+  row.style.height = 'auto';
+  const fullH = row.scrollHeight;
+  row.style.height = '0';
+  row.offsetHeight; // force reflow
+  row.style.height = fullH + 'px';
+  row.classList.add('open');
+  row.addEventListener('transitionend', function onEnd(e) {
+    if (e.propertyName !== 'height') return;
+    row.style.height = 'auto';
+    row.removeEventListener('transitionend', onEnd);
+  });
+}
+
 // ── Save edits ─────────────────────────────────────────────────────────────
 async function saveEdits(id) {
   const record   = collection.find(r=>r.id===id);
@@ -734,10 +753,7 @@ async function saveEdits(id) {
       // Refresh card badge
       renderGrid();
       // Re-open detail (grid re-render closes it otherwise)
-      requestAnimationFrame(()=>{
-        const row = document.getElementById('detail-row-'+id);
-        if (row) requestAnimationFrame(()=>row.classList.add('open'));
-      });
+      requestAnimationFrame(()=>openDetailRow(id));
 
     } catch(e) {
       statusEl.className = 'save-status error';
@@ -749,10 +765,7 @@ async function saveEdits(id) {
       ? '✓ Saved locally (re-sync to enable Discogs write-back)'
       : '✓ Saved locally';
     renderGrid();
-    requestAnimationFrame(()=>{
-      const row = document.getElementById('detail-row-'+id);
-      if (row) requestAnimationFrame(()=>row.classList.add('open'));
-    });
+    requestAnimationFrame(()=>openDetailRow(id));
   }
 }
 
