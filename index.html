@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wax — Vinyl Collection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Mono:wght@300;400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0e0d0b; --surface:#161410; --surface2:#1e1b17; --surface3:#252118;
+  --border:#2a2620; --border2:#332e28;
+  --cream:#e8dfc8; --cream-dim:#a89f8a;
+  --amber:#c8832a; --amber-glow:rgba(200,131,42,0.13);
+  --green:#4a8c5c; --green-glow:rgba(74,140,92,0.13);
+  --blue:#3a7abf; --blue-glow:rgba(58,122,191,0.13);
+  --red:#b84040;
+  --text:#e0d8c8; --text-dim:#6e6558;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:1000;opacity:0.35;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");}
+
+/* ── Header ── */
+header{display:flex;align-items:center;justify-content:space-between;padding:18px 40px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;gap:14px;background:rgba(14,13,11,0.94);backdrop-filter:blur(14px);}
+.logo{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:var(--cream);letter-spacing:-0.5px;flex-shrink:0;}
+.logo span{color:var(--amber);font-style:italic;}
+.sync-pill{display:flex;align-items:center;gap:7px;font-family:'DM Mono',monospace;font-size:11px;color:var(--text-dim);padding:5px 12px;border:1px solid var(--border);border-radius:20px;cursor:pointer;transition:all 0.15s;white-space:nowrap;}
+.sync-pill:hover{border-color:var(--green);color:var(--green);}
+.sync-pill.synced{border-color:var(--green);color:var(--green);background:var(--green-glow);}
+.sync-pill .dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0;}
+.header-right{display:flex;align-items:center;gap:10px;}
+.count-badge{font-family:'DM Mono',monospace;font-size:12px;color:var(--text-dim);padding:4px 10px;border:1px solid var(--border);border-radius:20px;white-space:nowrap;}
+
+/* ── Buttons ── */
+.btn{background:var(--amber);color:#0e0d0b;border:none;border-radius:6px;padding:10px 18px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:opacity 0.15s,transform 0.1s;white-space:nowrap;}
+.btn:hover{opacity:0.85;}.btn:active{transform:scale(0.97);}.btn:disabled{opacity:0.35;cursor:not-allowed;transform:none;}
+.btn-ghost{background:transparent;color:var(--cream-dim);border:1px solid var(--border);}
+.btn-ghost:hover{border-color:var(--amber);color:var(--amber);opacity:1;}
+.btn-green{background:var(--green);color:#fff;}
+.btn-sm{padding:7px 13px;font-size:12px;}
+
+/* ── Search / Filters ── */
+.search-wrap{padding:22px 40px 0;}
+.search-input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px 18px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;transition:border-color 0.2s;}
+.search-input::placeholder{color:var(--text-dim);}
+.search-input:focus{border-color:var(--amber);}
+.filter-row{padding:13px 40px;display:flex;gap:8px;align-items:center;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.filter-chip{font-family:'DM Mono',monospace;font-size:11px;color:var(--text-dim);border:1px solid var(--border);border-radius:4px;padding:5px 12px;cursor:pointer;transition:all 0.15s;text-transform:uppercase;letter-spacing:0.05em;}
+.filter-chip:hover,.filter-chip.active{border-color:var(--amber);color:var(--amber);background:var(--amber-glow);}
+.sort-label{margin-left:auto;font-family:'DM Mono',monospace;font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.05em;}
+select.sort-select{background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--cream-dim);font-family:'DM Mono',monospace;font-size:11px;padding:5px 10px;outline:none;cursor:pointer;}
+
+/* ── Grid ── */
+.grid-wrap{margin:24px 40px;}
+.grid{display:grid;grid-template-columns:repeat(var(--cols,5),1fr);gap:1px;background:var(--border);border-radius:8px;overflow:hidden;}
+
+/* ── Cards ── */
+.record-card{background:var(--surface);cursor:pointer;transition:background 0.15s;position:relative;overflow:hidden;animation:fadeIn 0.28s ease both;}
+.record-card:hover{background:var(--surface2);}
+.record-card:hover .card-overlay{opacity:1;}
+.record-card.active{background:var(--surface3);outline:2px solid var(--amber);outline-offset:-2px;z-index:2;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.card-art{width:100%;aspect-ratio:1;object-fit:cover;display:block;background:var(--surface2);}
+.art-placeholder{width:100%;aspect-ratio:1;background:var(--surface2);display:flex;align-items:center;justify-content:center;}
+.vinyl-svg{width:68%;height:68%;opacity:0.18;}
+.card-overlay{position:absolute;inset:0;opacity:0;transition:opacity 0.2s;background:linear-gradient(to top,rgba(14,13,11,0.93) 0%,rgba(14,13,11,0.25) 50%,transparent 100%);display:flex;align-items:flex-end;padding:10px;gap:6px;}
+.icon-btn{width:30px;height:30px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;color:#fff;transition:transform 0.1s;}
+.icon-btn:hover{transform:scale(1.12);}
+.icon-btn-del{background:rgba(184,64,64,0.88);}
+.card-info{padding:10px 12px 13px;}
+.card-artist{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--amber);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.card-title{font-family:'Playfair Display',serif;font-size:13px;color:var(--cream);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:5px;}
+.card-meta{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--text-dim);}
+
+/* Cleaning status badge on card */
+.card-clean-badge{display:inline-flex;align-items:center;gap:4px;font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:0.06em;padding:2px 7px;border-radius:3px;margin-top:5px;}
+.badge-cleaned{background:var(--green-glow);color:var(--green);border:1px solid rgba(74,140,92,0.3);}
+.badge-needs-cleaning{background:rgba(200,131,42,0.1);color:var(--amber);border:1px solid rgba(200,131,42,0.25);}
+.badge-unknown{background:rgba(110,101,88,0.15);color:var(--text-dim);border:1px solid var(--border);}
+
+/* ── Inline detail row ── */
+.detail-row{grid-column:1/-1;background:var(--surface2);border-top:1px solid var(--border2);border-bottom:1px solid var(--border2);overflow:hidden;max-height:0;transition:max-height 0.38s cubic-bezier(0.4,0,0.2,1),opacity 0.25s ease;opacity:0;}
+.detail-row.open{max-height:1000px;opacity:1;}
+.detail-inner{display:grid;grid-template-columns:220px 1fr 300px;gap:0;padding:28px 32px;}
+
+/* Art col */
+.detail-art-col{padding-right:28px;}
+.detail-art{width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px;background:var(--surface3);display:block;margin-bottom:12px;}
+.detail-art-placeholder{width:100%;aspect-ratio:1;background:var(--surface3);border-radius:6px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;}
+.detail-discogs-link{display:flex;align-items:center;gap:6px;font-family:'DM Mono',monospace;font-size:16px;color:var(--text-dim);text-decoration:none;transition:color 0.15s;}
+.detail-discogs-link:hover{color:var(--amber);}
+
+/* Info col */
+.detail-info-col{padding-right:32px;border-right:1px solid var(--border);}
+.detail-title{font-family:'Playfair Display',serif;font-size:22px;color:var(--cream);line-height:1.2;margin-bottom:4px;}
+.detail-artist{font-family:'DM Mono',monospace;font-size:16px;color:var(--amber);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:18px;}
+.detail-meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 20px;margin-bottom:20px;}
+.detail-meta-label{font-family:'DM Mono',monospace;font-size:16px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:3px;}
+.detail-meta-value{font-size:16px;color:var(--cream-dim);line-height:1.4;}
+.tracklist-heading{font-family:'DM Mono',monospace;font-size:16px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px;padding-top:16px;border-top:1px solid var(--border);}
+.tracklist{list-style:none;}
+.tracklist li{display:flex;gap:12px;padding:5px 0;border-bottom:1px solid var(--border);font-size:16px;color:var(--cream-dim);}
+.track-pos{font-family:'DM Mono',monospace;font-size:16px;color:var(--text-dim);width:36px;flex-shrink:0;padding-top:1px;}
+.track-title{flex:1;}
+.track-dur{font-family:'DM Mono',monospace;font-size:16px;color:var(--text-dim);flex-shrink:0;}
+
+/* Edit col */
+.detail-edit-col{padding-left:32px;}
+.edit-section-title{font-family:'DM Mono',monospace;font-size:16px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:14px;}
+.edit-group{margin-bottom:15px;}
+.edit-label{font-family:'DM Mono',monospace;font-size:16px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.09em;margin-bottom:6px;display:block;}
+.edit-label .field-source{font-size:13px;color:var(--text-dim);opacity:0.6;margin-left:5px;font-style:italic;text-transform:none;letter-spacing:0;}
+.edit-select,.edit-textarea,.edit-input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:16px;padding:8px 11px;outline:none;transition:border-color 0.2s;}
+.edit-select:focus,.edit-textarea:focus,.edit-input:focus{border-color:var(--amber);}
+.edit-select{cursor:pointer;}
+.edit-textarea{resize:vertical;min-height:66px;line-height:1.5;}
+
+/* Cleaning status special styling */
+.cleaning-status-select{border-color:rgba(58,122,191,0.4);}
+.cleaning-status-select:focus{border-color:var(--blue);}
+
+.tag-input-wrap{display:flex;gap:7px;}
+.tag-input-wrap .edit-input{flex:1;}
+.tags-list{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;}
+.tag-chip{display:inline-flex;align-items:center;gap:5px;font-family:'DM Mono',monospace;font-size:16px;color:var(--amber);background:var(--amber-glow);border:1px solid rgba(200,131,42,0.3);border-radius:4px;padding:4px 10px;}
+.tag-chip button{background:none;border:none;cursor:pointer;color:var(--text-dim);font-size:16px;line-height:1;padding:0;}
+.tag-chip button:hover{color:var(--red);}
+
+.save-bar{display:flex;align-items:center;gap:10px;margin-top:18px;padding-top:15px;border-top:1px solid var(--border);}
+.save-status{font-family:'DM Mono',monospace;font-size:16px;flex:1;}
+.save-status.success{color:var(--green);}
+.save-status.error{color:var(--red);}
+
+.detail-loading{grid-column:1/-1;text-align:center;padding:48px;font-family:'DM Mono',monospace;font-size:16px;color:var(--text-dim);}
+
+/* ── Empty ── */
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 40px;gap:16px;text-align:center;}
+.empty-state svg{opacity:0.12;}
+.empty-title{font-family:'Playfair Display',serif;font-size:22px;color:var(--cream);margin-top:14px;}
+.empty-sub{color:var(--text-dim);font-size:14px;max-width:340px;line-height:1.7;}
+
+/* ── Modals ── */
+.modal-backdrop{position:fixed;inset:0;background:rgba(10,9,8,0.85);backdrop-filter:blur(6px);z-index:200;display:none;align-items:center;justify-content:center;padding:24px;}
+.modal-backdrop.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;width:100%;max-width:680px;max-height:90vh;overflow-y:auto;animation:modalIn 0.2s ease;}
+@keyframes modalIn{from{opacity:0;transform:translateY(14px) scale(0.98)}to{opacity:1;transform:none}}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:22px 26px 0;}
+.modal-title{font-family:'Playfair Display',serif;font-size:21px;color:var(--cream);}
+.close-btn{background:none;border:none;color:var(--text-dim);font-size:24px;cursor:pointer;line-height:1;padding:3px 7px;}
+.close-btn:hover{color:var(--cream);}
+.modal-body{padding:22px 26px 26px;}
+.tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:22px;}
+.tab{font-family:'DM Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;padding:9px 16px;cursor:pointer;color:var(--text-dim);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.15s;}
+.tab.active{color:var(--amber);border-bottom-color:var(--amber);}
+.tab-panel{display:none;}.tab-panel.active{display:block;}
+.form-group{margin-bottom:16px;}
+.form-label{display:block;font-family:'DM Mono',monospace;font-size:9.5px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-dim);margin-bottom:7px;}
+.form-input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:border-color 0.2s;}
+.form-input:focus{border-color:var(--amber);}
+.form-input::placeholder{color:var(--text-dim);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:13px;}
+.discogs-results{margin-top:14px;display:flex;flex-direction:column;gap:7px;max-height:340px;overflow-y:auto;}
+.discogs-result{display:flex;gap:13px;align-items:center;padding:11px;border:1px solid var(--border);border-radius:6px;cursor:pointer;transition:border-color 0.15s,background 0.15s;}
+.discogs-result:hover{border-color:var(--amber);background:var(--amber-glow);}
+.result-thumb{width:50px;height:50px;border-radius:4px;object-fit:cover;flex-shrink:0;background:var(--surface2);}
+.result-info{flex:1;min-width:0;}
+.result-title{font-family:'Playfair Display',serif;font-size:13px;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.result-meta{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--text-dim);margin-top:2px;}
+.result-add{font-size:19px;color:var(--amber);flex-shrink:0;}
+#scanner-video{width:100%;border-radius:8px;aspect-ratio:4/3;object-fit:cover;background:#000;}
+.scanner-hint{text-align:center;font-family:'DM Mono',monospace;font-size:11px;color:var(--text-dim);margin-top:10px;}
+
+/* Settings */
+.settings-connected{display:flex;align-items:center;gap:12px;padding:13px 15px;background:var(--green-glow);border:1px solid var(--green);border-radius:7px;margin-bottom:18px;}
+.settings-connected-label{font-family:'DM Mono',monospace;font-size:11px;color:var(--green);}
+.settings-connected-user{font-size:13px;color:var(--cream);font-weight:500;}
+.progress-wrap{margin-top:12px;display:none;}.progress-wrap.visible{display:block;}
+.progress-bar-track{width:100%;height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:9px;}
+.progress-bar-fill{height:100%;background:var(--green);border-radius:2px;transition:width 0.4s ease;width:0%;}
+.progress-text{font-family:'DM Mono',monospace;font-size:11px;color:var(--text-dim);text-align:center;}
+.divider{border:none;border-top:1px solid var(--border);margin:18px 0;}
+.hint-text{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);line-height:1.7;margin-top:5px;}
+.hint-text a{color:var(--amber);text-decoration:none;}.hint-text a:hover{text-decoration:underline;}
+.spinner{display:inline-block;width:12px;height:12px;border:2px solid var(--border);border-top-color:var(--amber);border-radius:50%;animation:spin 0.6s linear infinite;vertical-align:middle;margin-right:5px;}
+.spinner.green{border-top-color:var(--green);}
+@keyframes spin{to{transform:rotate(360deg);}}
+.status-msg{font-family:'DM Mono',monospace;font-size:12px;color:var(--text-dim);margin-top:10px;min-height:18px;}
+.status-msg.error{color:var(--red);}.status-msg.success{color:var(--green);}
+
+/* Custom fields info box */
+.custom-fields-info{background:var(--blue-glow);border:1px solid rgba(58,122,191,0.3);border-radius:6px;padding:11px 14px;margin-bottom:16px;font-family:'DM Mono',monospace;font-size:10px;color:var(--cream-dim);line-height:1.6;}
+.custom-fields-info strong{color:var(--cream);}
+
+@media(max-width:900px){
+  .detail-inner{grid-template-columns:1fr 1fr;}
+  .detail-edit-col{grid-column:1/-1;padding-left:0;padding-top:24px;border-top:1px solid var(--border);}
+  .detail-info-col{border-right:none;padding-right:0;}
+}
+@media(max-width:600px){
+  header{padding:14px 20px;flex-wrap:wrap;}
+  .search-wrap,.filter-row{padding-left:20px;padding-right:20px;}
+  .grid-wrap{margin:16px 20px;}
+  .detail-inner{grid-template-columns:1fr;}
+  .detail-art-col{padding-right:0;}
+  .form-row{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">W<span>ax</span></div>
+  <div class="sync-pill" id="sync-pill" onclick="openSettingsModal()">
+    <span class="dot"></span><span id="sync-pill-text">Connect Discogs</span>
+  </div>
+  <div class="header-right">
+    <span class="count-badge" id="count-badge">0 records</span>
+    <button class="btn" onclick="openAddModal()">+ Add</button>
+  </div>
+</header>
+
+<div class="search-wrap">
+  <input class="search-input" id="search-input" placeholder="Search artist, title, label…" oninput="renderGrid()">
+</div>
+
+<div class="filter-row">
+  <span class="filter-chip active" onclick="setFilter(this,'all')">All</span>
+  <span class="filter-chip" onclick="setFilter(this,'60s')">60s</span>
+  <span class="filter-chip" onclick="setFilter(this,'70s')">70s</span>
+  <span class="filter-chip" onclick="setFilter(this,'80s')">80s</span>
+  <span class="filter-chip" onclick="setFilter(this,'90s')">90s</span>
+  <span class="filter-chip" onclick="setFilter(this,'00s')">00s</span>
+  <span class="filter-chip" onclick="setFilter(this,'10s')">10s</span>
+  <span class="filter-chip" onclick="setFilter(this,'20s')">20s</span>
+  <span class="sort-label">Sort:</span>
+  <select class="sort-select" id="sort-select" onchange="renderGrid()">
+    <option value="added">Date added</option>
+    <option value="artist">Artist A–Z</option>
+    <option value="title">Title A–Z</option>
+    <option value="year">Year</option>
+    <option value="clean">Cleaning status</option>
+  </select>
+</div>
+
+<div class="grid-wrap"><div class="grid" id="grid"></div></div>
+
+<!-- ── Settings Modal ── -->
+<div class="modal-backdrop" id="settings-modal" onclick="closeSettingsOnBackdrop(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Discogs Connection</div>
+      <button class="close-btn" onclick="closeSettingsModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div id="connected-banner" style="display:none">
+        <div class="settings-connected">
+          <span style="font-size:19px;color:var(--green)">✓</span>
+          <div>
+            <div class="settings-connected-user" id="connected-username"></div>
+            <div class="settings-connected-label" id="connected-last-sync"></div>
+          </div>
+        </div>
+      </div>
+      <div id="custom-fields-banner" style="display:none">
+        <div class="custom-fields-info" id="custom-fields-info-text"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Personal Access Token</label>
+        <input class="form-input" type="password" id="settings-token" placeholder="Paste your Discogs token here" autocomplete="off">
+        <div class="hint-text">Generate at <a href="https://www.discogs.com/settings/developers" target="_blank">discogs.com/settings/developers</a> → "Generate new token". Stored only in your browser.</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Discogs Username</label>
+        <input class="form-input" type="text" id="settings-username" placeholder="your_discogs_username">
+      </div>
+      <button class="btn btn-ghost" style="width:100%;margin-bottom:4px" onclick="saveSettings()">Save Credentials</button>
+      <div class="status-msg" id="settings-status"></div>
+      <hr class="divider">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px">
+        <div style="flex:1">
+          <div style="font-size:14px;color:var(--cream);margin-bottom:4px;font-family:'Playfair Display',serif">Sync My Collection</div>
+          <div class="hint-text" style="margin-top:0">Fetches all releases from Discogs including your custom fields (Cleaning Status, condition, notes, folder). Replaces local data.</div>
+        </div>
+        <button class="btn btn-green" id="sync-btn" onclick="syncCollection()" style="flex-shrink:0;margin-top:2px">Sync Now</button>
+      </div>
+      <div class="progress-wrap" id="sync-progress">
+        <div class="progress-bar-track" style="margin-top:13px"><div class="progress-bar-fill" id="sync-bar"></div></div>
+        <div class="progress-text" id="sync-progress-text"></div>
+      </div>
+      <div class="status-msg" id="sync-status"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Add Record Modal ── -->
+<div class="modal-backdrop" id="add-modal" onclick="closeAddOnBackdrop(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add a Record</div>
+      <button class="close-btn" onclick="closeAddModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('discogs')">Discogs Search</div>
+        <div class="tab" onclick="switchTab('barcode')">Barcode Scan</div>
+        <div class="tab" onclick="switchTab('manual')">Manual Entry</div>
+      </div>
+      <div class="tab-panel active" id="tab-discogs">
+        <div style="display:flex;gap:9px">
+          <input class="form-input" id="discogs-query" placeholder="Artist name or album title…" style="flex:1" onkeydown="if(event.key==='Enter')searchDiscogs()">
+          <button class="btn" onclick="searchDiscogs()">Search</button>
+        </div>
+        <div class="status-msg" id="discogs-status"></div>
+        <div class="discogs-results" id="discogs-results"></div>
+      </div>
+      <div class="tab-panel" id="tab-barcode">
+        <video id="scanner-video" autoplay playsinline muted></video>
+        <div class="scanner-hint">Point your camera at the barcode on the album sleeve</div>
+        <div class="status-msg" id="barcode-status"></div>
+      </div>
+      <div class="tab-panel" id="tab-manual">
+        <div class="form-group"><label class="form-label">Artist</label><input class="form-input" id="m-artist" placeholder="e.g. Coltrane, John"></div>
+        <div class="form-group"><label class="form-label">Title</label><input class="form-input" id="m-title" placeholder="e.g. A Love Supreme"></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Year</label><input class="form-input" id="m-year" placeholder="1965" type="number"></div>
+          <div class="form-group"><label class="form-label">Label</label><input class="form-input" id="m-label" placeholder="e.g. Impulse!"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Cover Art URL <span style="font-size:9px;opacity:0.6">(optional)</span></label><input class="form-input" id="m-art" placeholder="https://…"></div>
+        <button class="btn" style="width:100%;margin-top:8px" onclick="addManual()">Add to Collection</button>
+        <div class="status-msg" id="manual-status"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+let collection   = JSON.parse(localStorage.getItem('wax_collection') || '[]');
+let settings     = JSON.parse(localStorage.getItem('wax_settings')   || '{}');
+let customFields = JSON.parse(localStorage.getItem('wax_custom_fields') || '[]'); // [{id, name, type, options, position}]
+let activeFilter = 'all';
+let expandedId   = null;
+let scannerStream = null, scannerTimer = null;
+let isSyncing     = false;
+let folders       = [];
+
+// Discogs built-in grades
+const GRADES = ['M','NM (Near Mint)','VG+ (Very Good Plus)','VG (Very Good)','G+ (Good Plus)','G (Good)','F (Fair)','P (Poor)'];
+
+// Cleaning status field name to match (case-insensitive)
+const CLEANING_FIELD_NAME = 'cleaning status';
+
+// ── Persist ────────────────────────────────────────────────────────────────
+function saveCollection() { localStorage.setItem('wax_collection', JSON.stringify(collection)); }
+function persistSettings() { localStorage.setItem('wax_settings', JSON.stringify(settings)); }
+function saveCustomFields() { localStorage.setItem('wax_custom_fields', JSON.stringify(customFields)); }
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+function dHeaders(json=false) {
+  const h = { 'User-Agent':'WaxApp/1.0' };
+  if (settings.token) h['Authorization'] = `Discogs token=${settings.token}`;
+  if (json) h['Content-Type'] = 'application/json';
+  return h;
+}
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+function uid(){ return crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36)+Math.random().toString(36).slice(2); }
+
+// Find the cleaning status custom field definition
+function cleaningField() {
+  return customFields.find(f => f.name.toLowerCase() === CLEANING_FIELD_NAME);
+}
+
+// Get cleaning status value from a record
+function getCleaningStatus(record) {
+  const cf = cleaningField();
+  if (!cf) return null;
+  return record.customFields?.[cf.id] || null;
+}
+
+function cleaningBadgeHtml(record) {
+  const cf = cleaningField();
+  if (!cf) return '';
+  const val = (record.customFields?.[cf.id] || '').toLowerCase().trim();
+  if (!val) return `<div class="card-clean-badge badge-unknown">No status</div>`;
+  const isCleaned = val.includes('clean') && !val.includes('not') && !val.includes('need') && !val.includes('un');
+  return `<div class="card-clean-badge ${isCleaned ? 'badge-cleaned' : 'badge-needs-cleaning'}">${esc(record.customFields[cf.id])}</div>`;
+}
+
+// ── Sync pill ──────────────────────────────────────────────────────────────
+function updateSyncPill() {
+  const pill = document.getElementById('sync-pill');
+  const text = document.getElementById('sync-pill-text');
+  if (settings.username && settings.token) {
+    pill.classList.add('synced');
+    text.textContent = settings.lastSync ? `@${settings.username} · synced` : `@${settings.username}`;
+  } else {
+    pill.classList.remove('synced');
+    text.textContent = 'Connect Discogs';
+  }
+}
+
+function updateCustomFieldsBanner() {
+  const banner = document.getElementById('custom-fields-banner');
+  const text   = document.getElementById('custom-fields-info-text');
+  if (!customFields.length) { banner.style.display='none'; return; }
+  const cf = cleaningField();
+  banner.style.display = 'block';
+  const fieldList = customFields.map(f=>`<strong>${esc(f.name)}</strong> (ID: ${f.id})`).join(', ');
+  text.innerHTML = `${customFields.length} custom field${customFields.length!==1?'s':''} found: ${fieldList}.`
+    + (cf ? ` <strong>Cleaning Status</strong> is synced and editable.` : ` No field named "Cleaning Status" was found — check the name matches exactly in Discogs.`);
+}
+
+// ── Grid ───────────────────────────────────────────────────────────────────
+function calcCols() { return Math.max(2, Math.floor(document.querySelector('.grid-wrap').offsetWidth / 210)); }
+
+function renderGrid() {
+  const query = document.getElementById('search-input').value.toLowerCase();
+  const sort  = document.getElementById('sort-select').value;
+  const grid  = document.getElementById('grid');
+  const cols  = calcCols();
+  grid.style.setProperty('--cols', cols);
+
+  let records = [...collection];
+  if (activeFilter !== 'all') {
+    const decade = parseInt(activeFilter);
+    records = records.filter(r=>{ const y=parseInt(r.year); return y>=decade&&y<decade+10; });
+  }
+  if (query) {
+    records = records.filter(r=>
+      (r.artist||'').toLowerCase().includes(query)||
+      (r.title||'').toLowerCase().includes(query)||
+      (r.label||'').toLowerCase().includes(query)
+    );
+  }
+  records.sort((a,b)=>{
+    if(sort==='artist') return (a.artist||'').localeCompare(b.artist||'');
+    if(sort==='title')  return (a.title||'').localeCompare(b.title||'');
+    if(sort==='year')   return (parseInt(a.year)||0)-(parseInt(b.year)||0);
+    if(sort==='clean')  return (getCleaningStatus(a)||'zzz').localeCompare(getCleaningStatus(b)||'zzz');
+    return (b.addedAt||0)-(a.addedAt||0);
+  });
+
+  document.getElementById('count-badge').textContent = collection.length===1?'1 record':`${collection.length} records`;
+
+  if (records.length===0) {
+    grid.innerHTML=`<div class="empty-state" style="grid-column:1/-1">
+      <svg width="72" height="72" viewBox="0 0 80 80" fill="none"><circle cx="40" cy="40" r="38" stroke="#e8dfc8" stroke-width="2"/><circle cx="40" cy="40" r="24" stroke="#e8dfc8" stroke-width="1.5"/><circle cx="40" cy="40" r="10" stroke="#e8dfc8" stroke-width="1.5"/><circle cx="40" cy="40" r="3" fill="#e8dfc8"/></svg>
+      <div class="empty-title">${collection.length===0?'The shelf is bare':'No records found'}</div>
+      <div class="empty-sub">${collection.length===0?'Connect your Discogs account to sync, or add records individually.':'Try a different search or filter.'}</div>
+    </div>`;
+    return;
+  }
+
+  let html = '';
+  records.forEach((r,i) => {
+    const isActive = r.id === expandedId;
+    html += cardHTML(r, i, isActive);
+    const rowOfActive = expandedId ? records.findIndex(x=>x.id===expandedId) : -1;
+    if (rowOfActive >= 0) {
+      const rowStart = Math.floor(rowOfActive/cols)*cols;
+      const rowEnd   = Math.min(rowStart+cols-1, records.length-1);
+      if (i === rowEnd) html += detailRowPlaceholder(records[rowOfActive]);
+    }
+  });
+  grid.innerHTML = html;
+
+  if (expandedId) {
+    requestAnimationFrame(()=>{
+      const row = document.getElementById('detail-row-'+expandedId);
+      if (row) requestAnimationFrame(()=>row.classList.add('open'));
+    });
+  }
+}
+
+function cardHTML(r, i, isActive) {
+  const artImg = r.art ? `<img class="card-art" src="${esc(r.art)}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">` : '';
+  const cf = cleaningField();
+  const cleanBadge = cf ? cleaningBadgeHtml(r) : '';
+  return `
+  <div class="record-card${isActive?' active':''}" style="animation-delay:${Math.min(i,20)*0.022}s" onclick="toggleDetail('${r.id}')">
+    ${artImg}
+    <div class="art-placeholder"${r.art?' style="display:none"':''}>
+      <svg class="vinyl-svg" viewBox="0 0 100 100" fill="none"><circle cx="50" cy="50" r="48" stroke="#e8dfc8" stroke-width="1.5"/><circle cx="50" cy="50" r="32" stroke="#e8dfc8" stroke-width="1"/><circle cx="50" cy="50" r="16" stroke="#e8dfc8" stroke-width="1"/><circle cx="50" cy="50" r="4" fill="#e8dfc8"/></svg>
+    </div>
+    <div class="card-overlay">
+      <button class="icon-btn icon-btn-del" title="Remove" onclick="event.stopPropagation();removeRecord('${r.id}')">×</button>
+    </div>
+    <div class="card-info">
+      <div class="card-artist">${esc(r.artist||'Unknown Artist')}</div>
+      <div class="card-title">${esc(r.title||'Untitled')}</div>
+      <div class="card-meta">${esc([r.year,r.label].filter(Boolean).join(' · '))}</div>
+      ${cleanBadge}
+    </div>
+  </div>`;
+}
+
+function detailRowPlaceholder(r) {
+  return `<div class="detail-row" id="detail-row-${r.id}">
+    <div class="detail-inner" id="detail-inner-${r.id}">
+      <div class="detail-loading"><span class="spinner"></span>Loading details…</div>
+    </div>
+  </div>`;
+}
+
+// ── Toggle / load detail ───────────────────────────────────────────────────
+async function toggleDetail(id) {
+  if (expandedId === id) { expandedId=null; renderGrid(); return; }
+  expandedId = id;
+  renderGrid();
+  const record = collection.find(r=>r.id===id);
+  if (record) await loadDetailPanel(record);
+}
+
+async function loadDetailPanel(record) {
+  const inner = document.getElementById('detail-inner-'+record.id);
+  if (!inner) return;
+
+  let releaseData = null;
+  if (record.discogsReleaseId && settings.token) {
+    try {
+      const res = await fetch(`https://api.discogs.com/releases/${record.discogsReleaseId}`, { headers: dHeaders() });
+      if (res.ok) releaseData = await res.json();
+    } catch(e){}
+  }
+
+  // Fetch folders if needed
+  if (settings.token && settings.username && folders.length===0) {
+    try {
+      const res = await fetch(`https://api.discogs.com/users/${encodeURIComponent(settings.username)}/collection/folders`, { headers: dHeaders() });
+      if (res.ok) { const d=await res.json(); folders=d.folders||[]; }
+    } catch(e){}
+  }
+
+  renderDetailPanel(record, releaseData, inner);
+}
+
+function renderDetailPanel(record, rel, inner) {
+  const r = record;
+  const artHtml = r.art ? `<img class="detail-art" src="${esc(r.art)}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">` : '';
+  const phHtml  = `<div class="detail-art-placeholder"${r.art?' style="display:none"':''}><svg style="width:60%;height:60%;opacity:0.15" viewBox="0 0 100 100" fill="none"><circle cx="50" cy="50" r="48" stroke="#e8dfc8" stroke-width="1.5"/><circle cx="50" cy="50" r="30" stroke="#e8dfc8" stroke-width="1"/><circle cx="50" cy="50" r="4" fill="#e8dfc8"/></svg></div>`;
+  const discogsUrl = r.discogsReleaseId ? `https://www.discogs.com/release/${r.discogsReleaseId}` : '';
+
+  const genres   = rel?.genres?.join(', ') || r.genres  || '—';
+  const styles   = rel?.styles?.join(', ') || r.styles  || '—';
+  const country  = rel?.country            || r.country || '—';
+  const released = rel?.released_formatted || rel?.released || r.year || '—';
+  const formats  = rel?.formats?.map(f=>[f.name,...(f.descriptions||[])].join(' ')).join(', ') || r.formats || '—';
+  const catno    = rel?.labels?.[0]?.catno || r.catno || '—';
+  const labelName= rel?.labels?.map(l=>l.name.replace(/\s*\(\d+\)$/,'')).join(', ') || r.label || '—';
+
+  const tracklistHtml = rel?.tracklist?.length
+    ? `<div class="tracklist-heading">Tracklist</div><ul class="tracklist">${rel.tracklist.map(t=>`<li><span class="track-pos">${esc(t.position||'')}</span><span class="track-title">${esc(t.title)}</span><span class="track-dur">${esc(t.duration||'')}</span></li>`).join('')}</ul>`
+    : '';
+
+  const gradeOpts = (cur) => GRADES.map(g=>`<option value="${esc(g)}"${(cur||'')==g?'selected':''}>${esc(g)}</option>`).join('');
+  const folderOpts = folders.length ? folders.map(f=>`<option value="${f.id}"${(r.folderId||1)==f.id?'selected':''}>${esc(f.name)}</option>`).join('') : `<option value="1">Uncategorized</option>`;
+  const tags = (r.localTags||[]).map(t=>`<span class="tag-chip">${esc(t)}<button onclick="removeTag('${r.id}','${esc(t)}')" title="Remove">×</button></span>`).join('');
+
+  // Build custom field editors
+  const cf = cleaningField();
+  let cleaningEditorHtml = '';
+  if (cf) {
+    const currentVal = r.customFields?.[cf.id] || '';
+    if (cf.type === 'dropdown' && cf.options?.length) {
+      const opts = cf.options.map(o=>`<option value="${esc(o)}"${currentVal===o?'selected':''}>${esc(o)}</option>`).join('');
+      cleaningEditorHtml = `
+        <div class="edit-group">
+          <label class="edit-label">Cleaning Status <span class="field-source">synced to Discogs</span></label>
+          <select class="edit-select cleaning-status-select" id="edit-cleaning-${r.id}">
+            <option value="">— not set —</option>
+            ${opts}
+          </select>
+        </div>`;
+    } else {
+      // Free-text custom field
+      cleaningEditorHtml = `
+        <div class="edit-group">
+          <label class="edit-label">Cleaning Status <span class="field-source">synced to Discogs</span></label>
+          <input class="edit-input cleaning-status-select" id="edit-cleaning-${r.id}" placeholder="e.g. Cleaned, Not cleaned…" value="${esc(currentVal)}">
+        </div>`;
+    }
+  }
+
+  // All other custom fields (non-cleaning)
+  const otherCustomFieldsHtml = customFields
+    .filter(f => f.name.toLowerCase() !== CLEANING_FIELD_NAME)
+    .map(f => {
+      const val = r.customFields?.[f.id] || '';
+      return `<div class="edit-group">
+        <label class="edit-label">${esc(f.name)} <span class="field-source">synced to Discogs</span></label>
+        <input class="edit-input" id="edit-cf-${r.id}-${f.id}" placeholder="—" value="${esc(val)}">
+      </div>`;
+    }).join('');
+
+  inner.innerHTML = `
+    <div class="detail-art-col">
+      ${artHtml}${phHtml}
+      ${discogsUrl?`<a class="detail-discogs-link" href="${esc(discogsUrl)}" target="_blank">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42L17.59 5H14V3zM5 5h6v2H7v10h10v-4h2v6H5V5z"/></svg>
+        View on Discogs
+      </a>`:''}
+    </div>
+    <div class="detail-info-col">
+      <div class="detail-title">${esc(r.title||'Untitled')}</div>
+      <div class="detail-artist">${esc(r.artist||'Unknown Artist')}</div>
+      <div class="detail-meta-grid">
+        <div><div class="detail-meta-label">Year</div><div class="detail-meta-value">${esc(released)}</div></div>
+        <div><div class="detail-meta-label">Label</div><div class="detail-meta-value">${esc(labelName)}</div></div>
+        <div><div class="detail-meta-label">Cat #</div><div class="detail-meta-value">${esc(catno)}</div></div>
+        <div><div class="detail-meta-label">Format</div><div class="detail-meta-value">${esc(formats)}</div></div>
+        <div><div class="detail-meta-label">Genre</div><div class="detail-meta-value">${esc(genres)}</div></div>
+        <div><div class="detail-meta-label">Style</div><div class="detail-meta-value">${esc(styles)}</div></div>
+        <div><div class="detail-meta-label">Country</div><div class="detail-meta-value">${esc(country)}</div></div>
+        ${rel?.community?.rating?.average?`<div><div class="detail-meta-label">Rating</div><div class="detail-meta-value">${rel.community.rating.average.toFixed(2)} / 5</div></div>`:''}
+      </div>
+      ${tracklistHtml}
+    </div>
+    <div class="detail-edit-col">
+      <div class="edit-section-title">Your Copy</div>
+      <div class="edit-group">
+        <label class="edit-label">Media Condition</label>
+        <select class="edit-select" id="edit-media-${r.id}"><option value="">— not set —</option>${gradeOpts(r.mediaCondition)}</select>
+      </div>
+      <div class="edit-group">
+        <label class="edit-label">Sleeve Condition</label>
+        <select class="edit-select" id="edit-sleeve-${r.id}"><option value="">— not set —</option>${gradeOpts(r.sleeveCondition)}</select>
+      </div>
+      ${cleaningEditorHtml}
+      ${otherCustomFieldsHtml}
+      <div class="edit-group">
+        <label class="edit-label">Folder</label>
+        <select class="edit-select" id="edit-folder-${r.id}">${folderOpts}</select>
+      </div>
+      <div class="edit-group">
+        <label class="edit-label">Notes</label>
+        <textarea class="edit-textarea" id="edit-notes-${r.id}" placeholder="Personal notes…">${esc(r.notes||'')}</textarea>
+      </div>
+      <div class="edit-group">
+        <label class="edit-label">Tags <span class="field-source">local only</span></label>
+        <div class="tag-input-wrap">
+          <input class="edit-input" id="tag-input-${r.id}" placeholder="Add a tag…" onkeydown="if(event.key==='Enter'){event.preventDefault();addTag('${r.id}')}">
+          <button class="btn btn-ghost btn-sm" onclick="addTag('${r.id}')">Add</button>
+        </div>
+        <div class="tags-list" id="tags-list-${r.id}">${tags}</div>
+      </div>
+      <div class="save-bar">
+        <span class="save-status" id="save-status-${r.id}"></span>
+        <button class="btn btn-sm" onclick="saveEdits('${r.id}')">Save Changes</button>
+      </div>
+    </div>`;
+}
+
+// ── Save edits ─────────────────────────────────────────────────────────────
+async function saveEdits(id) {
+  const record   = collection.find(r=>r.id===id);
+  const statusEl = document.getElementById('save-status-'+id);
+  if (!record||!statusEl) return;
+
+  const mediaCondition  = document.getElementById('edit-media-'+id)?.value  || '';
+  const sleeveCondition = document.getElementById('edit-sleeve-'+id)?.value || '';
+  const folderId        = parseInt(document.getElementById('edit-folder-'+id)?.value||'1');
+  const notes           = document.getElementById('edit-notes-'+id)?.value  || '';
+
+  // Cleaning status
+  const cf = cleaningField();
+  let newCleaningVal = null;
+  if (cf) {
+    newCleaningVal = document.getElementById('edit-cleaning-'+id)?.value || '';
+  }
+
+  // Other custom fields
+  const otherCfUpdates = customFields
+    .filter(f => f.name.toLowerCase() !== CLEANING_FIELD_NAME)
+    .map(f => ({ field: f, value: document.getElementById(`edit-cf-${id}-${f.id}`)?.value || '' }));
+
+  // Save locally first
+  record.mediaCondition  = mediaCondition;
+  record.sleeveCondition = sleeveCondition;
+  record.folderId        = folderId;
+  record.notes           = notes;
+  if (cf) {
+    if (!record.customFields) record.customFields = {};
+    record.customFields[cf.id] = newCleaningVal;
+  }
+  otherCfUpdates.forEach(({field, value}) => {
+    if (!record.customFields) record.customFields = {};
+    record.customFields[field.id] = value;
+  });
+  saveCollection();
+
+  // Write back to Discogs if we have instance info
+  if (record.discogsId && record.instanceId && settings.token && settings.username) {
+    statusEl.className = 'save-status';
+    statusEl.innerHTML = '<span class="spinner"></span>Saving to Discogs…';
+    const errors = [];
+
+    try {
+      // 1. PATCH instance (condition, notes, folder move)
+      const patchUrl = `https://api.discogs.com/users/${encodeURIComponent(settings.username)}/collection/folders/${record._originalFolderId||1}/releases/${record.discogsId}/instances/${record.instanceId}`;
+      const body = {};
+      if (mediaCondition)  body.condition        = mediaCondition;
+      if (sleeveCondition) body.sleeve_condition = sleeveCondition;
+      if (notes)           body.notes            = notes;
+      if (folderId !== (record._originalFolderId||1)) body.folder_id = folderId;
+
+      const patchRes = await fetch(patchUrl, { method:'PATCH', headers:dHeaders(true), body:JSON.stringify(body) });
+      if (!patchRes.ok && patchRes.status !== 204) errors.push(`PATCH ${patchRes.status}`);
+      else if (folderId !== (record._originalFolderId||1)) {
+        record._originalFolderId = folderId;
+        saveCollection();
+      }
+
+      // 2. POST custom fields — each field gets its own endpoint call
+      // Cleaning Status
+      if (cf && newCleaningVal !== null) {
+        await saveCustomField(record, cf.id, newCleaningVal, errors);
+      }
+      // Other custom fields
+      for (const {field, value} of otherCfUpdates) {
+        await saveCustomField(record, field.id, value, errors);
+        await sleep(150); // gentle rate limiting
+      }
+
+      if (errors.length) {
+        statusEl.className = 'save-status error';
+        statusEl.textContent = `✗ Some errors: ${errors.join(', ')}. Saved locally.`;
+      } else {
+        statusEl.className = 'save-status success';
+        statusEl.textContent = '✓ Saved to Discogs';
+      }
+      // Refresh card badge
+      renderGrid();
+      // Re-open detail (grid re-render closes it otherwise)
+      requestAnimationFrame(()=>{
+        const row = document.getElementById('detail-row-'+id);
+        if (row) requestAnimationFrame(()=>row.classList.add('open'));
+      });
+
+    } catch(e) {
+      statusEl.className = 'save-status error';
+      statusEl.textContent = '✗ ' + (e.message||'Error') + '. Saved locally.';
+    }
+  } else {
+    statusEl.className = 'save-status success';
+    statusEl.textContent = record.fromDiscogs
+      ? '✓ Saved locally (re-sync to enable Discogs write-back)'
+      : '✓ Saved locally';
+    renderGrid();
+    requestAnimationFrame(()=>{
+      const row = document.getElementById('detail-row-'+id);
+      if (row) requestAnimationFrame(()=>row.classList.add('open'));
+    });
+  }
+}
+
+async function saveCustomField(record, fieldId, value, errors) {
+  // POST to the Edit Fields Instance endpoint
+  const url = `https://api.discogs.com/users/${encodeURIComponent(settings.username)}/collection/folders/${record.folderId||1}/releases/${record.discogsId}/instances/${record.instanceId}/fields/${fieldId}`;
+  try {
+    const res = await fetch(url, { method:'POST', headers:dHeaders(true), body:JSON.stringify({ value }) });
+    if (!res.ok && res.status !== 204) errors.push(`field ${fieldId}: ${res.status}`);
+  } catch(e) {
+    errors.push(`field ${fieldId}: network error`);
+  }
+}
+
+// ── Tags ───────────────────────────────────────────────────────────────────
+function addTag(id) {
+  const input = document.getElementById('tag-input-'+id);
+  const val   = input.value.trim(); if (!val) return;
+  const record = collection.find(r=>r.id===id); if (!record) return;
+  if (!record.localTags) record.localTags = [];
+  if (!record.localTags.includes(val)) { record.localTags.push(val); saveCollection(); }
+  input.value = '';
+  const list = document.getElementById('tags-list-'+id);
+  if (list) list.innerHTML = record.localTags.map(t=>`<span class="tag-chip">${esc(t)}<button onclick="removeTag('${id}','${esc(t)}')" title="Remove">×</button></span>`).join('');
+}
+
+function removeTag(id, tag) {
+  const record = collection.find(r=>r.id===id); if (!record) return;
+  record.localTags = (record.localTags||[]).filter(t=>t!==tag); saveCollection();
+  const list = document.getElementById('tags-list-'+id);
+  if (list) list.innerHTML = record.localTags.map(t=>`<span class="tag-chip">${esc(t)}<button onclick="removeTag('${id}','${esc(t)}')" title="Remove">×</button></span>`).join('');
+}
+
+// ── Remove record ──────────────────────────────────────────────────────────
+function removeRecord(id) {
+  if (!confirm('Remove from local collection?')) return;
+  if (expandedId===id) expandedId=null;
+  collection = collection.filter(r=>r.id!==id);
+  saveCollection(); renderGrid();
+}
+function addRecord(rec) { rec.id=uid(); rec.addedAt=Date.now(); collection.unshift(rec); saveCollection(); renderGrid(); closeAddModal(); }
+
+// ── Filter ─────────────────────────────────────────────────────────────────
+function setFilter(el,val) {
+  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  const map={'60s':1960,'70s':1970,'80s':1980,'90s':1990,'00s':2000,'10s':2010,'20s':2020};
+  activeFilter=val==='all'?'all':(map[val]||'all');
+  expandedId=null; renderGrid();
+}
+
+// ── Settings ───────────────────────────────────────────────────────────────
+function openSettingsModal() {
+  if (settings.token)    document.getElementById('settings-token').value    = settings.token;
+  if (settings.username) document.getElementById('settings-username').value = settings.username;
+  const banner = document.getElementById('connected-banner');
+  if (settings.username && settings.token) {
+    banner.style.display='block';
+    document.getElementById('connected-username').textContent = '@'+settings.username;
+    document.getElementById('connected-last-sync').textContent = settings.lastSync
+      ? 'Last synced '+new Date(settings.lastSync).toLocaleString() : 'Not yet synced';
+  } else { banner.style.display='none'; }
+  updateCustomFieldsBanner();
+  document.getElementById('settings-modal').classList.add('open');
+}
+function closeSettingsModal() { if(isSyncing) return; document.getElementById('settings-modal').classList.remove('open'); }
+function closeSettingsOnBackdrop(e) { if(e.target===document.getElementById('settings-modal')) closeSettingsModal(); }
+
+function saveSettings() {
+  const token=document.getElementById('settings-token').value.trim();
+  const username=document.getElementById('settings-username').value.trim();
+  const statusEl=document.getElementById('settings-status');
+  if(!token||!username){statusEl.className='status-msg error';statusEl.textContent='Enter both token and username.';return;}
+  settings.token=token; settings.username=username;
+  persistSettings(); updateSyncPill();
+  statusEl.className='status-msg success'; statusEl.textContent='✓ Saved. Ready to sync.';
+  document.getElementById('connected-banner').style.display='block';
+  document.getElementById('connected-username').textContent='@'+username;
+  document.getElementById('connected-last-sync').textContent=settings.lastSync?'Last synced '+new Date(settings.lastSync).toLocaleString():'Not yet synced';
+}
+
+// ── Sync collection ────────────────────────────────────────────────────────
+async function syncCollection() {
+  if(isSyncing) return;
+  if(!settings.token||!settings.username){
+    document.getElementById('sync-status').className='status-msg error';
+    document.getElementById('sync-status').textContent='Save credentials first.'; return;
+  }
+  isSyncing=true;
+  const btn=document.getElementById('sync-btn'), bar=document.getElementById('sync-bar');
+  const progressText=document.getElementById('sync-progress-text'), statusEl=document.getElementById('sync-status');
+  btn.disabled=true; btn.textContent='Syncing…';
+  document.getElementById('sync-progress').classList.add('visible');
+  bar.style.width='0%'; statusEl.className='status-msg';
+  statusEl.innerHTML='<span class="spinner green"></span>Fetching custom fields…';
+
+  try {
+    // ── Step 1: Fetch custom fields definition ──────────────────────────
+    const cfRes = await fetch(`https://api.discogs.com/users/${encodeURIComponent(settings.username)}/collection/fields`, { headers: dHeaders() });
+    if (cfRes.status===401) throw new Error('Invalid token. Regenerate at discogs.com/settings/developers.');
+    if (cfRes.status===404) throw new Error(`User "${settings.username}" not found.`);
+    if (!cfRes.ok) throw new Error(`Discogs error ${cfRes.status}.`);
+    const cfData = await cfRes.json();
+
+    customFields = (cfData.fields || []).map(f => ({
+      id:       f.id,
+      name:     f.name,
+      type:     f.type,          // 'dropdown' or 'textarea'
+      options:  f.options || [],  // only for dropdown fields
+      position: f.position
+    }));
+    saveCustomFields();
+
+    const cf = cleaningField();
+    statusEl.innerHTML = cf
+      ? `<span class="spinner green"></span>Found ${customFields.length} custom field(s) including <strong>Cleaning Status</strong>. Fetching collection…`
+      : `<span class="spinner green"></span>Found ${customFields.length} custom field(s) — no "Cleaning Status" field found. Fetching collection…`;
+
+    // ── Step 2: Fetch collection pages ─────────────────────────────────
+    const p1url=`https://api.discogs.com/users/${encodeURIComponent(settings.username)}/collection/folders/0/releases?per_page=100&page=1&sort=added&sort_order=desc`;
+    const p1res=await fetch(p1url,{headers:dHeaders()});
+    if(!p1res.ok) throw new Error(`Collection fetch error ${p1res.status}.`);
+    const p1=await p1res.json();
+    const totalPages=p1.pagination.pages, totalItems=p1.pagination.items;
+    progressText.textContent=`Page 1 of ${totalPages} — ${totalItems} total`;
+    bar.style.width=`${Math.round(100/totalPages)}%`;
+    statusEl.textContent='';
+    let all=[...p1.releases];
+    for(let page=2;page<=totalPages;page++){
+      const res=await fetch(`https://api.discogs.com/users/${encodeURIComponent(settings.username)}/collection/folders/0/releases?per_page=100&page=${page}&sort=added&sort_order=desc`,{headers:dHeaders()});
+      if(!res.ok) throw new Error(`Page ${page} failed: ${res.status}`);
+      const d=await res.json(); all=all.concat(d.releases);
+      bar.style.width=`${Math.round(page/totalPages*100)}%`;
+      progressText.textContent=`Page ${page} of ${totalPages} — ${all.length} fetched…`;
+      await sleep(200);
+    }
+
+    progressText.textContent=`Processing ${all.length} records…`;
+
+    // ── Step 3: Map releases ────────────────────────────────────────────
+    // The collection endpoint returns notes[] array with field_id and value
+    // We map all custom field values by their field ID
+    collection = all.map(item => {
+      const info = item.basic_information;
+      const notesArr = item.notes || [];
+
+      // Map all custom field values
+      const cfValues = {};
+      notesArr.forEach(n => { cfValues[n.field_id] = n.value; });
+
+      // Built-in fields: Discogs uses field_id 1 = Media Condition, 2 = Sleeve Condition
+      // Custom fields have IDs from the fields endpoint
+      const builtinMedia  = notesArr.find(n => n.field_id === 1)?.value || '';
+      const builtinSleeve = notesArr.find(n => n.field_id === 2)?.value || '';
+      const builtinNotes  = notesArr.find(n => n.field_id === 3)?.value || '';
+
+      // Custom fields (anything not in 1,2,3)
+      const customFieldValues = {};
+      notesArr.forEach(n => {
+        if (n.field_id > 3) customFieldValues[n.field_id] = n.value;
+      });
+
+      return {
+        id:                'discogs_'+item.id,
+        discogsId:         item.id,
+        instanceId:        item.instance_id,
+        discogsReleaseId:  info.id,
+        _originalFolderId: item.folder_id || 1,
+        folderId:          item.folder_id || 1,
+        artist:            info.artists?.map(a=>a.name.replace(/\s*\(\d+\)$/,'')).join(', ') || '',
+        title:             info.title || '',
+        year:              String(info.year||''),
+        label:             info.labels?.[0]?.name || '',
+        catno:             info.labels?.[0]?.catno || '',
+        art:               info.cover_image || info.thumb || '',
+        formats:           info.formats?.map(f=>f.name).join(', ') || '',
+        genres:            info.genres?.join(', ') || '',
+        styles:            info.styles?.join(', ') || '',
+        mediaCondition:    builtinMedia,
+        sleeveCondition:   builtinSleeve,
+        notes:             builtinNotes,
+        customFields:      customFieldValues,  // { fieldId: value, ... }
+        addedAt:           item.date_added ? new Date(item.date_added).getTime() : Date.now(),
+        fromDiscogs:       true,
+        localTags:         []
+      };
+    });
+
+    saveCollection();
+    settings.lastSync=Date.now(); persistSettings(); updateSyncPill(); updateCustomFieldsBanner();
+
+    bar.style.width='100%'; progressText.textContent='';
+    const cfMsg = cf ? ` · Cleaning Status synced` : ` · No "Cleaning Status" field found`;
+    statusEl.className='status-msg success';
+    statusEl.textContent=`✓ Synced ${collection.length} records from @${settings.username}${cfMsg}`;
+    document.getElementById('connected-last-sync').textContent='Last synced '+new Date(settings.lastSync).toLocaleString();
+    document.getElementById('connected-banner').style.display='block';
+    expandedId=null; folders=[]; renderGrid();
+
+  } catch(e) {
+    statusEl.className='status-msg error';
+    statusEl.textContent=e.message||'Sync failed.';
+    bar.style.width='0%'; progressText.textContent='';
+  } finally {
+    isSyncing=false; btn.disabled=false; btn.textContent='Sync Now';
+  }
+}
+
+// ── Add modal ──────────────────────────────────────────────────────────────
+function openAddModal()  { document.getElementById('add-modal').classList.add('open'); }
+function closeAddModal() {
+  document.getElementById('add-modal').classList.remove('open'); stopScanner();
+  ['discogs-query','discogs-status','barcode-status'].forEach(id=>{const el=document.getElementById(id);if(el){el.value='';el.textContent='';}});
+  const dr=document.getElementById('discogs-results'); if(dr) dr.innerHTML='';
+}
+function closeAddOnBackdrop(e){ if(e.target===document.getElementById('add-modal')) closeAddModal(); }
+function switchTab(name){
+  const names=['discogs','barcode','manual'];
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',names[i]===name));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('active',p.id==='tab-'+name));
+  if(name==='barcode') startScanner(); else stopScanner();
+}
+
+// ── Discogs search ─────────────────────────────────────────────────────────
+async function searchDiscogs() {
+  const q=document.getElementById('discogs-query').value.trim(); if(!q) return;
+  const status=document.getElementById('discogs-status'), results=document.getElementById('discogs-results');
+  status.innerHTML='<span class="spinner"></span>Searching…'; results.innerHTML='';
+  try {
+    const res=await fetch(`https://api.discogs.com/database/search?q=${encodeURIComponent(q)}&type=release&per_page=15`,{headers:dHeaders()});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    if(!data.results?.length){status.textContent='No results found.';return;}
+    status.textContent='';
+    results.innerHTML=data.results.slice(0,12).map(r=>{
+      const thumb=r.cover_image||r.thumb||'',year=r.year||'',label=r.label?.[0]||'';
+      const parts=r.title.split(' - '),artist=parts[0]||'',title=parts.slice(1).join(' - ')||r.title;
+      const payload=encodeURIComponent(JSON.stringify({artist,title,year,label,art:thumb,discogsReleaseId:r.id}));
+      return `<div class="discogs-result" onclick="addFromSearch('${payload}')">
+        <img class="result-thumb" src="${esc(thumb)}" alt="" loading="lazy" onerror="this.src=''">
+        <div class="result-info"><div class="result-title">${esc(r.title)}</div><div class="result-meta">${esc([year,label,r.format?.[0]].filter(Boolean).join(' · '))}</div></div>
+        <span class="result-add">+</span>
+      </div>`;
+    }).join('');
+  } catch(e){status.className='status-msg error';status.textContent='Error: '+e.message;}
+}
+function addFromSearch(p){ addRecord(JSON.parse(decodeURIComponent(p))); }
+
+// ── Barcode ────────────────────────────────────────────────────────────────
+async function startScanner(){
+  const video=document.getElementById('scanner-video'),status=document.getElementById('barcode-status');
+  try{
+    scannerStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280}}});
+    video.srcObject=scannerStream; await video.play();
+    if('BarcodeDetector' in window){
+      const det=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e']});
+      const scan=async()=>{
+        try{const c=await det.detect(video);if(c.length){const b=c[0].rawValue;status.innerHTML=`<span class="spinner"></span>Found ${esc(b)}, looking up…`;await lookupBarcode(b);return;}}catch{}
+        scannerTimer=setTimeout(scan,400);
+      };
+      scannerTimer=setTimeout(scan,400);
+    } else { status.textContent='Barcode scanning requires Chrome on Android or Desktop.'; }
+  } catch(e){status.className='status-msg error';status.textContent='Camera access denied.';}
+}
+function stopScanner(){
+  if(scannerStream){scannerStream.getTracks().forEach(t=>t.stop());scannerStream=null;}
+  if(scannerTimer){clearTimeout(scannerTimer);scannerTimer=null;}
+}
+async function lookupBarcode(barcode){
+  const status=document.getElementById('barcode-status');
+  try{
+    const res=await fetch(`https://api.discogs.com/database/search?barcode=${barcode}&per_page=3`,{headers:dHeaders()});
+    const data=await res.json();
+    if(data.results?.length){const r=data.results[0],p=r.title.split(' - ');addRecord({artist:p[0]||'',title:p.slice(1).join(' - ')||r.title,year:r.year||'',label:r.label?.[0]||'',art:r.cover_image||r.thumb||'',discogsReleaseId:r.id});}
+    else{status.className='status-msg error';status.textContent=`Barcode not found. Try manual entry.`;}
+  }catch(e){status.className='status-msg error';status.textContent='Lookup failed.';}
+}
+
+// ── Manual entry ───────────────────────────────────────────────────────────
+function addManual(){
+  const artist=document.getElementById('m-artist').value.trim(),title=document.getElementById('m-title').value.trim();
+  const status=document.getElementById('manual-status');
+  if(!artist&&!title){status.className='status-msg error';status.textContent='Enter at least an artist or title.';return;}
+  addRecord({artist,title,year:document.getElementById('m-year').value.trim(),label:document.getElementById('m-label').value.trim(),art:document.getElementById('m-art').value.trim()});
+  ['m-artist','m-title','m-year','m-label','m-art'].forEach(id=>document.getElementById(id).value='');
+}
+
+// ── Resize ─────────────────────────────────────────────────────────────────
+let resizeTimer;
+window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(expandedId!==null)renderGrid();},200);});
+
+// ── Init ───────────────────────────────────────────────────────────────────
+updateSyncPill();
+renderGrid();
+</script>
+</body>
+</html>
